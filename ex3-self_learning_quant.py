@@ -10,9 +10,10 @@ import backtest as twp
 from matplotlib import pyplot as plt
 from sklearn import metrics, preprocessing
 from talib.abstract import *
-from sklearn.externals import joblib
+# from sklearn.externals import joblib
+import joblib
 
-import Quandl
+import quandl
 
 '''
 Name:        The Self Learning Quant, Example 3
@@ -30,7 +31,7 @@ MatplotLib
 scikit-learn
 TA-Lib, instructions at https://mrjbq7.github.io/ta-lib/install.html
 Keras, https://keras.io/
-Quandl, https://www.quandl.com/tools/python
+quandl, https://www.quandl.com/tools/python
 backtest.py from the TWP library. Download backtest.py and put in the same folder
 
 /plt create a subfolder in the same directory where plot files will be saved
@@ -40,10 +41,10 @@ backtest.py from the TWP library. Download backtest.py and put in the same folde
 #Load data
 def read_convert_data(symbol='XBTEUR'):
     if symbol == 'XBTEUR':
-        prices = Quandl.get("BCHARTS/KRAKENEUR")
+        prices = quandl.get("BCHARTS/KRAKENEUR")
         prices.to_pickle('data/XBTEUR_1day.pkl') # a /data folder must exist
     if symbol == 'EURUSD_1day':
-        #prices = Quandl.get("ECB/EURUSD")
+        #prices = quandl.get("ECB/EURUSD")
         prices = pd.read_csv('data/EURUSD_1day.csv',sep=",", skiprows=0, header=0, index_col=0, parse_dates=True, names=['ticker', 'date', 'time', 'open', 'low', 'high', 'close'])
         prices.to_pickle('data/EURUSD_1day.pkl')
     print(prices)
@@ -191,7 +192,7 @@ model.add(LSTM(64,
                stateful=False))
 model.add(Dropout(0.5))
 
-model.add(Dense(4, init='lecun_uniform'))
+model.add(Dense(4, kernel_initializer='lecun_uniform'))
 model.add(Activation('linear')) #linear output so we can have range of real-valued outputs
 
 rms = RMSprop()
@@ -216,7 +217,7 @@ learning_progress = []
 #stores tuples of (S, A, R, S')
 h = 0
 #signal = pd.Series(index=market_data.index)
-signal = pd.Series(index=np.arange(len(indata)))
+signal = pd.Series(index=np.arange(len(indata)), dtype='float64')
 for i in range(epochs):
     if i == epochs-1: #the last epoch, use test data set
         indata = load_data(test=True)
@@ -274,7 +275,7 @@ for i in range(epochs):
 
             X_train = np.squeeze(np.array(X_train), axis=(1))
             y_train = np.array(y_train)
-            model.fit(X_train, y_train, batch_size=batchSize, nb_epoch=1, verbose=0)
+            model.fit(X_train, y_train, batch_size=batchSize, epochs=1, verbose=0)
             
             state = new_state
         if terminal_state == 1: #if reached terminal state, update epoch status

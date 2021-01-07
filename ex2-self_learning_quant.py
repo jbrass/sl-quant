@@ -105,7 +105,7 @@ def get_reward(new_state, time_step, action, xdata, signal, terminal_state, epoc
 
 def evaluate_Q(eval_data, eval_model):
     #This function is used to evaluate the perofrmance of the system each epoch, without the influence of epsilon and random actions
-    signal = pd.Series(index=np.arange(len(eval_data)))
+    signal = pd.Series(index=np.arange(len(eval_data)), dtype='float64')
     state, xdata = init_state(eval_data)
     status = 1
     terminal_state = 0
@@ -132,15 +132,15 @@ from keras.layers.core import Dense, Dropout, Activation
 from keras.optimizers import RMSprop
 
 model = Sequential()
-model.add(Dense(4, init='lecun_uniform', input_shape=(2,)))
+model.add(Dense(4, kernel_initializer='lecun_uniform', input_shape=(2,)))
 model.add(Activation('relu'))
 #model.add(Dropout(0.2)) I'm not using dropout in this example
 
-model.add(Dense(4, init='lecun_uniform'))
+model.add(Dense(4, kernel_initializer='lecun_uniform'))
 model.add(Activation('relu'))
 #model.add(Dropout(0.2))
 
-model.add(Dense(4, init='lecun_uniform'))
+model.add(Dense(4, kernel_initializer='lecun_uniform'))
 model.add(Activation('linear')) #linear output so we can have range of real-valued outputs
 
 rms = RMSprop()
@@ -158,7 +158,7 @@ epsilon = 1
 learning_progress = []
 #stores tuples of (S, A, R, S')
 h = 0
-signal = pd.Series(index=np.arange(len(indata)))
+signal = pd.Series(index=np.arange(len(indata)), dtype='float64')
 for i in range(epochs):
 
     state, xdata = init_state(indata)
@@ -188,7 +188,7 @@ for i in range(epochs):
         else: #terminal state (means that it is the last state)
             update = reward
         y[0][action] = update #target output
-        model.fit(state.reshape(1,2), y, batch_size=1, nb_epoch=1, verbose=0)
+        model.fit(state.reshape(1,2), y, batch_size=1, epochs=1, verbose=0)
         state = new_state
         if terminal_state == 1: #terminal state
             status = 0
